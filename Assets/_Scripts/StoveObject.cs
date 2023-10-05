@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class StoveObject : KitchenObject
+public class StoveObject : Ingredient
 {
     public CookState CookState { get; private set; }
     [field: SerializeField] public float CookTime { get; private set; }

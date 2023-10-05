@@ -3,9 +3,10 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
+[RequireComponent(typeof(KitchenObjectParent))]
 public class PlayerPickup : NetworkBehaviour
 {
-    [SerializeField] private KitchenObject _currentObject;
+    private KitchenObject _currentObject;
 
     public override void OnNetworkSpawn()
     {
@@ -35,7 +36,7 @@ public class PlayerPickup : NetworkBehaviour
 
     private void TryPlace()
     {
-        IPlaceable<KitchenObject> placeable = Physics.OverlapSphere(transform.position, 2).OrderBy(c => Vector3.Distance(transform.position, c.transform.position)).FirstOrDefault(c => c.gameObject != gameObject && c.GetComponent<IPlaceable<KitchenObject>>() != null)?.GetComponent<IPlaceable<KitchenObject>>();
+        IPlaceable<KitchenObject> placeable = Physics.OverlapSphere(transform.position, 2).OrderBy(c => Vector3.Distance(transform.position, c.transform.position)).FirstOrDefault(c => c.gameObject != gameObject && c.gameObject != _currentObject.gameObject && c.GetComponent<IPlaceable<KitchenObject>>() != null)?.GetComponent<IPlaceable<KitchenObject>>();
 
         if (placeable != null && placeable.Place(_currentObject))
         {
@@ -45,7 +46,7 @@ public class PlayerPickup : NetworkBehaviour
 
     public void TryPickup()
     {
-        IPickupable<KitchenObject> pickupable = Physics.OverlapSphere(transform.position, 2).OrderBy(c => Vector3.Distance(transform.position, c.transform.position)).FirstOrDefault(c => c.gameObject != gameObject && c.GetComponent<IPickupable<KitchenObject>>() != null).GetComponent<IPickupable<KitchenObject>>();
+        IPickupable<KitchenObject> pickupable = Physics.OverlapSphere(transform.position, 2).OrderBy(c => Vector3.Distance(transform.position, c.transform.position)).FirstOrDefault(c => c.gameObject != gameObject && c.GetComponent<IPickupable<KitchenObject>>() != null)?.GetComponent<IPickupable<KitchenObject>>();
         pickupable?.Pickup(NetworkObject);
     }
 

@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 5994862535829795579}
   - component: {fileID: -2590654790146967402}
   - component: {fileID: 4134470527539478707}
+  - component: {fileID: -5696138149063032335}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -123,6 +124,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7065258427137613611}
+  - {fileID: 1643402842688768505}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3887966659833602484
@@ -344,4 +346,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51008ff74fe858a469ddc23dc6c1ccd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentObject: {fileID: 0}
+--- !u!114 &-5696138149063032335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3148253621108620210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1f903fbd2be0134f884a1bfdb77a217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <FollowPos>k__BackingField: {fileID: 1643402842688768505}
+--- !u!1 &3777091253010096866
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1643402842688768505}
+  m_Layer: 0
+  m_Name: Pickup Position
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1643402842688768505
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3777091253010096866}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3203037681782550210}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 
-public class NetworkManagerUi : MonoBehaviour
+public class NetworkManagerUI : MonoBehaviour
 {
     public void Host()
     {

@@ -7,7 +7,7 @@ public class Dispenser : NetworkBehaviour, IPickupable<KitchenObject>
 
     // Seems like a sketchy solution since it forces every IPickupable
     // to call the SetCurrentObject method on the PlayerPickup
-    public /*KitchenObject*/ void Pickup(NetworkObject returnTo)
+    public void Pickup(NetworkObject returnTo)
     {
         DispenseServerRpc(returnTo);
     }

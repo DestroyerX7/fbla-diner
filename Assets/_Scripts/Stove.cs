@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
 
-// [RequireComponent(typeof(KitchenItemParent))]
+[RequireComponent(typeof(KitchenObjectParent))]
 public class Stove : NetworkBehaviour, IPickupable<KitchenObject>, IPlaceable<KitchenObject>
 {
     private StoveObject _currentObject;
@@ -15,15 +15,6 @@ public class Stove : NetworkBehaviour, IPickupable<KitchenObject>, IPlaceable<Ki
     [SerializeField] private GameObject _timerPopup;
     [SerializeField] private Image _timerImage;
 
-    // private KitchenItemParent _placePos;
-
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-
-        // _placePos = GetComponent<KitchenItemParent>();
-    }
-
     private void Update()
     {
         if (_currentObject == null)
@@ -35,12 +26,31 @@ public class Stove : NetworkBehaviour, IPickupable<KitchenObject>, IPlaceable<Ki
         float totalCookSpeed = _currentObject.CookTime / _cookSpeedMultiplier;
         if (_cookTimer >= totalCookSpeed)
         {
-            _currentObject.Cook();
+            if (IsServer)
+            {
+                _currentObject.Cook();
+            }
             _cookTimer = 0;
         }
 
         float percentCooked = _cookTimer / totalCookSpeed;
         _timerImage.fillAmount = percentCooked;
+    }
+
+    /// <summary>
+    /// Places item passed on the stove if the stove does not have a current item
+    /// </summary>
+    /// <param name="item">Item to be put on the stove</param>
+    /// <returns>Wheater the item was placed on the stove or not</returns>
+    public bool Place(KitchenObject item)
+    {
+        if (_currentObject != null || item.GetComponent<StoveObject>() == null)
+        {
+            return false;
+        }
+
+        PlaceServerRpc(item.GetNetworkObject());
+        return true;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -57,6 +67,11 @@ public class Stove : NetworkBehaviour, IPickupable<KitchenObject>, IPlaceable<Ki
         _currentObject = kitchenObject;
         kitchenObject.SetFollowTransform(NetworkObject);
         _timerPopup.SetActive(true);
+    }
+
+    public void Pickup(NetworkObject returnTo)
+    {
+        PickupServerRpc(returnTo);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -79,37 +94,5 @@ public class Stove : NetworkBehaviour, IPickupable<KitchenObject>, IPlaceable<Ki
         _currentObject = null;
         _cookTimer = 0;
         _timerPopup.SetActive(false);
-    }
-
-    /// <summary>
-    /// Plaecs item passes on the stove if the stove does not have a current item
-    /// </summary>
-    /// <param name="item">Item to be put on the stove</param>
-    /// <returns>Wheater the item was placed on the stove or not</returns>
-    public bool Place(KitchenObject item)
-    {
-        if (_currentObject != null || item.GetComponent<StoveObject>() == null)
-        {
-            return false;
-        }
-
-        PlaceServerRpc(item.GetNetworkObject());
-        return true;
-    }
-
-    // /// <summary>
-    // /// Set the curretn item on the stove to null and return the item
-    // /// </summary>
-    // /// <returns>The item that was removed from the stove</returns>
-    public /*KitchenObject*/ void Pickup(NetworkObject returnTo)
-    {
-        // if (_currentItem == null)
-        // {
-        //     return null;
-        // }
-
-        // KitchenItem kitchenItem = _currentItem;
-        PickupServerRpc(returnTo);
-        // return kitchenItem;
     }
 }

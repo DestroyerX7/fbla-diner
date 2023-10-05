@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class KitchenObject : NetworkBehaviour
+public class KitchenObject : NetworkBehaviour, ITrashable
 {
     private Transform _followTransfrom;
 
@@ -12,7 +12,7 @@ public class KitchenObject : NetworkBehaviour
             return;
         }
 
-        transform.SetPositionAndRotation(_followTransfrom.position + transform.forward, _followTransfrom.rotation);
+        transform.SetPositionAndRotation(_followTransfrom.position, _followTransfrom.rotation);
     }
 
     public void SetFollowTransform(NetworkObject followTransfrom)
@@ -30,11 +30,22 @@ public class KitchenObject : NetworkBehaviour
     private void SetFollowTransfromClientRpc(NetworkObjectReference reference)
     {
         reference.TryGet(out NetworkObject networkObject);
-        _followTransfrom = networkObject.transform;
+        _followTransfrom = networkObject.GetComponent<KitchenObjectParent>().FollowPos;
     }
 
     public NetworkObject GetNetworkObject()
     {
         return NetworkObject;
+    }
+
+    public virtual void Trash()
+    {
+        TrashServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void TrashServerRpc()
+    {
+        NetworkObject.Despawn();
     }
 }

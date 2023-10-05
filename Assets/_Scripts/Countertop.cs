@@ -5,11 +5,9 @@ public class Countertop : NetworkBehaviour, IPlaceable<KitchenObject>, IPickupab
 {
     private KitchenObject _currentObject;
 
-    public /*KitchenObject*/ void Pickup(NetworkObject retunTo)
+    public void Pickup(NetworkObject retunTo)
     {
-        KitchenObject kitchenObject = _currentObject;
         PickupServerRpc(retunTo);
-        // return kitchenObject;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -23,13 +21,18 @@ public class Countertop : NetworkBehaviour, IPlaceable<KitchenObject>, IPickupab
     {
         returnTo.TryGet(out NetworkObject returnToNetworkObject);
         returnToNetworkObject.GetComponent<PlayerPickup>().SetCurrentObject(_currentObject);
-        _currentObject.SetFollowTransform(returnToNetworkObject);
+        _currentObject.SetFollowTransform(returnToNetworkObject); // Could be moved out of rpc but may cause problems i.e object following player before they have the object
         _currentObject = null;
     }
 
     public bool Place(KitchenObject kitchenObject)
     {
-        if (_currentObject != null)
+        if (_currentObject != null && _currentObject.TryGetComponent(out IPlaceable<KitchenObject> placeable))
+        {
+            placeable.Place(kitchenObject);
+            return true;
+        }
+        else if (_currentObject != null)
         {
             return false;
         }
