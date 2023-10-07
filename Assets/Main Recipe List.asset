@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51804b330db106346a9620edc77d6ac2, type: 3}
-  m_Name: Burger
+  m_Script: {fileID: 11500000, guid: d7f31719296c3a645bdc64b9fe8ec4de, type: 3}
+  m_Name: Main Recipe List
   m_EditorClassIdentifier: 
-  <Ingredients>k__BackingField: 000000000100000000000000
-  <Name>k__BackingField: Burger
-  <RecipeImage>k__BackingField: {fileID: 0}
+  <RecipeList>k__BackingField:
+  - {fileID: 11400000, guid: 4b258b2013194b543810e9c7fa8c6af0, type: 2}
+  - {fileID: 11400000, guid: 03abf4440b848564bab621c204b087e8, type: 2}

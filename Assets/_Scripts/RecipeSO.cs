@@ -5,6 +5,10 @@ public class RecipeSO : ScriptableObject
 {
     [field: SerializeField] public IngredientType[] Ingredients { get; private set; }
 
+    [field: SerializeField] public string Name { get; private set; }
+
+    [field: SerializeField] public Sprite RecipeImage { get; private set; }
+
     public float CheckRecipe(Plate plate)
     {
         Ingredient[] ingredients = plate.GetIngredients();
