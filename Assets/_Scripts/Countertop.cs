@@ -7,6 +7,11 @@ public class Countertop : NetworkBehaviour, IPlaceable<KitchenObject>, IPickupab
 
     public void Pickup(NetworkObject retunTo)
     {
+        if (_currentObject == null)
+        {
+            return;
+        }
+
         PickupServerRpc(retunTo);
     }
 

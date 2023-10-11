@@ -14,4 +14,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <RecipeList>k__BackingField:
   - {fileID: 11400000, guid: 4b258b2013194b543810e9c7fa8c6af0, type: 2}
-  - {fileID: 11400000, guid: 03abf4440b848564bab621c204b087e8, type: 2}

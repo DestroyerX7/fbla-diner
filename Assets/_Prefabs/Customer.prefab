@@ -348,10 +348,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d50e7106b59f24746b0cf7da733ef2e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 5
   _recipeListSO: {fileID: 11400000, guid: 709870fcb80473c49a113907e6354f3c, type: 2}
   _recipeImage: {fileID: 5268214145566876175}
   _recipeText: {fileID: 2707792182148356606}
+  _leaveTime: 60
 --- !u!114 &1944006696350736495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,7 +381,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 5948992691718492495}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.1
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50

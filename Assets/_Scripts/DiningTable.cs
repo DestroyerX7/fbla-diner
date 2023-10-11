@@ -48,13 +48,26 @@ public class DiningTable : NetworkBehaviour, IPlaceable<KitchenObject>
 
     public void SetCustomer(Customer customer)
     {
-        _currentCustomer = customer;
+        SetCustomerServerRpc(customer.GetComponent<NetworkObject>());
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetCustomerServerRpc(NetworkObjectReference reference)
+    {
+        SetCustomerClientRpc(reference);
+    }
+
+    [ClientRpc]
+    private void SetCustomerClientRpc(NetworkObjectReference reference)
+    {
+        reference.TryGet(out NetworkObject customerNetworkObject);
+        _currentCustomer = customerNetworkObject.GetComponent<Customer>(); ;
     }
 
     public void LeaveTable()
     {
         _currentCustomer = null;
-        _servedPlate.Trash();
+        _servedPlate?.Trash();
         _servedPlate = null;
     }
 }

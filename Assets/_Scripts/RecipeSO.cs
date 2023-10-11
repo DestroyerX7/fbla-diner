@@ -40,6 +40,9 @@ public class RecipeSO : ScriptableObject
             }
         }
 
+        // Substracts more points for additional ingredients
+        sum -= ingredients.Length - Ingredients.Length;
+
         return sum;
     }
 }
