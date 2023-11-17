@@ -39,6 +39,11 @@ public class Customer : NetworkBehaviour
             DespawnCustomerServerRpc(NetworkObject);
         }
 
+        if (_leaveTimer <= 0)
+        {
+            _recipeImage.SetActive(false);
+        }
+
         if (_currentTable == null)
         {
             return;
@@ -66,7 +71,7 @@ public class Customer : NetworkBehaviour
         float score = CheckPlate(plate);
         _currentTable.LeaveTable();
         DespawnCustomerServerRpc(NetworkObject);
-        print(score);
+        ScoreManager.Instance.AddPoints(score);
     }
 
     private float CheckPlate(Plate plate)
@@ -128,9 +133,24 @@ public class Customer : NetworkBehaviour
 
     private void LeaveRestaurant()
     {
-        _navMeshAgent.SetDestination(new Vector3(-18, 1, -13));
+        // _navMeshAgent.SetDestination(new Vector3(-18, 1, -13));
+        ScoreManager.Instance.AddPoints(-3);
+        SetLeavePosServerRpc();
         _currentTable.LeaveTable();
         _currentTable = null;
+
+        // Maybe change.
+        if (IsServer)
+        {
+            ScoreManager.Instance.AddPoints(-3);
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetLeavePosServerRpc()
+    {
+        Vector3 leavePos = RestaurantManager.Instance.GetCustomerSpawnPos();
+        _navMeshAgent.SetDestination(leavePos);
     }
 
     [ServerRpc(RequireOwnership = false)]

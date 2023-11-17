@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 using System;
 
 [RequireComponent(typeof(PlayerInput))]
@@ -30,6 +31,9 @@ public class PlayerController : NetworkBehaviour
         _rb = GetComponent<Rigidbody>();
 
         transform.position = Vector3.up;
+
+        UpdateColorServerRpc(PlayerCustomizationManager.Instance.GetColorByIndex(PlayerCustomization.ColorIndex));
+        // GetComponent<MeshRenderer>().materials[0].color = PlayerCustomizationManager.Instance.GetColorByIndex(PlayerCustomization.ColorIndex);
     }
 
     private void Update()
@@ -49,5 +53,17 @@ public class PlayerController : NetworkBehaviour
             Quaternion to = Quaternion.Euler(0, -angle, 0);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, to, _rotateSpeed * Time.deltaTime);
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void UpdateColorServerRpc(Color32 color)
+    {
+        UpdateColorClientRpc(color);
+    }
+
+    [ClientRpc]
+    private void UpdateColorClientRpc(Color32 color)
+    {
+        GetComponent<MeshRenderer>().materials[0].color = color;
     }
 }

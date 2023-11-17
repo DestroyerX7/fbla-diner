@@ -1,12 +1,16 @@
-using System;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(KitchenObjectParent))]
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerPickup : NetworkBehaviour
 {
     private KitchenObject _currentObject;
+
+    private PlayerInput _playerControls;
+    private InputAction _pickupAction;
 
     public override void OnNetworkSpawn()
     {
@@ -17,11 +21,14 @@ public class PlayerPickup : NetworkBehaviour
         }
 
         base.OnNetworkSpawn();
+
+        _playerControls = GetComponent<PlayerInput>();
+        _pickupAction = _playerControls.actions["Pickup"];
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        if (_pickupAction.triggered)
         {
             if (_currentObject == null)
             {

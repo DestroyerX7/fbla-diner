@@ -15,7 +15,8 @@ public class RestaurantManager : NetworkBehaviour
     private readonly Queue<Customer> _customers = new();
 
     [SerializeField] private Customer _customer;
-    [SerializeField] private Vector3 _customerSpawnPos = new(-18, 1, -13);
+    [SerializeField] private Vector3[] _customerSpawnPositions;
+    // [SerializeField] private Vector3 _customerSpawnPos = new(-18, 1, -13);
     [SerializeField] private Vector3 _customerWaitPos = new(10, 1, -12);
 
     private const int _maxCustomersInLine = 5;
@@ -43,6 +44,10 @@ public class RestaurantManager : NetworkBehaviour
         }
 
         InvokeRepeating(nameof(SpawnCustomerServerRpc), 5, 5);
+
+        // _customer.GetComponent<NetworkObject>().SpawnAsPlayerObject()
+
+        // NetworkManager.Singleton.
     }
 
     private void Update()
@@ -75,7 +80,8 @@ public class RestaurantManager : NetworkBehaviour
             return;
         }
 
-        Customer customer = Instantiate(_customer, _customerSpawnPos, Quaternion.identity);
+        Vector3 spawnPos = GetCustomerSpawnPos();
+        Customer customer = Instantiate(_customer, spawnPos, Quaternion.identity);
         customer.GetComponent<NetworkObject>().Spawn(true);
         // _customers.Enqueue(customer);
         EnqueueCustomerClientRpc(customer.GetComponent<NetworkObject>());
@@ -123,5 +129,11 @@ public class RestaurantManager : NetworkBehaviour
     public Vector3 GetWaitPos(int customerLineIndex)
     {
         return _customerWaitPos + 2 * customerLineIndex * Vector3.left;
+    }
+
+    public Vector3 GetCustomerSpawnPos()
+    {
+        int randIndex = Random.Range(0, _customerSpawnPositions.Length);
+        return _customerSpawnPositions[randIndex];
     }
 }
