@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Recipe", menuName = "FBLA Diner/Recipe")]
@@ -11,38 +12,40 @@ public class RecipeSO : ScriptableObject
 
     public float CheckRecipe(Plate plate)
     {
-        Ingredient[] ingredients = plate.GetIngredients();
+        Ingredient[] ingredients = new Ingredient[0];
 
-        float sum = 0;
-
-        for (int i = 0; i < Ingredients.Length; i++)
+        if (plate != null)
         {
-            IngredientType ingredientType = Ingredients[i];
+            ingredients = plate.GetIngredients();
+        }
 
-            if (ingredients.Length <= i || ingredients[i].GetIngredientType() != ingredientType)
+        int currentScore = 0;
+
+        foreach (IngredientType ingredientType in Ingredients)
+        {
+            Ingredient foundIngredient = ingredients.FirstOrDefault(i => i.GetIngredientType() == ingredientType);
+
+            if (foundIngredient == null)
             {
-                sum--;
+                currentScore--;
             }
-            else if (ingredients[i].TryGetComponent(out StoveObject stoveObject))
+            else if (foundIngredient.TryGetComponent(out StoveObject stoveObject))
             {
                 if (stoveObject.CookState != CookState.Cooked)
                 {
-                    sum--;
+                    currentScore--;
                 }
                 else
                 {
-                    sum++;
+                    currentScore++;
                 }
             }
             else
             {
-                sum++;
+                currentScore++;
             }
         }
 
-        // Substracts more points for additional ingredients
-        sum -= ingredients.Length - Ingredients.Length;
-
-        return sum;
+        return currentScore;
     }
 }

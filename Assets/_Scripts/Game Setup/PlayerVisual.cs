@@ -1,39 +1,83 @@
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class PlayerVisual : NetworkBehaviour
+public class PlayerVisual : NetworkBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    private MeshRenderer _meshRenderer;
+    private Image _image;
+
+    [SerializeField] private Sprite _defaultSprite;
+    [SerializeField] private GameObject _kickUi;
+    private Button _button;
+
+    private NetworkVariable<PlayerData> _playerData = new();
 
     private void Awake()
     {
-        _meshRenderer = GetComponent<MeshRenderer>();
+        _image = GetComponent<Image>();
+        _playerData.OnValueChanged += UpdateSprite;
     }
 
-    public void SetColor(Color32 color)
+    public override void OnNetworkSpawn()
     {
-        SetColorServerRpc(color);
+        _image.sprite = PlayerCustomizationManager.Instance.GetSpriteByIndex(_playerData.Value.SpriteIndex);
+        _button = GetComponent<Button>();
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void SetColorServerRpc(Color32 color)
+    private void UpdateSprite(PlayerData previousVal, PlayerData newVal)
     {
-        SetColorClientRpc(color);
-    }
-
-    [ClientRpc]
-    private void SetColorClientRpc(Color32 color)
-    {
-        _meshRenderer.materials[0].color = color;
+        _image.sprite = PlayerCustomizationManager.Instance.GetSpriteByIndex(newVal.SpriteIndex);
     }
 
     public void Enable()
     {
-        _meshRenderer.enabled = true;
+        _image.enabled = true;
     }
 
     public void Disable()
     {
-        _meshRenderer.enabled = false;
+        _image.sprite = _defaultSprite;
+    }
+
+    public void SetPlayerData(PlayerData playerData)
+    {
+        SetPlayerDataServerRpc(playerData);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetPlayerDataServerRpc(PlayerData playerData)
+    {
+        _playerData.Value = playerData;
+    }
+
+    public void KickPlayer()
+    {
+        if (!IsHost || _playerData.Value.ClientId == NetworkManager.Singleton.LocalClientId)
+        {
+            return;
+        }
+
+        NetworkManager.Singleton.DisconnectClient(_playerData.Value.ClientId);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!IsHost)
+        {
+            return;
+        }
+
+        // _kickUi.SetActive(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!IsHost)
+        {
+            return;
+        }
+
+        // _kickUi.SetActive(false);
     }
 }

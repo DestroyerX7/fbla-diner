@@ -1,9 +1,17 @@
+using UnityEngine;
+
 public class PlayerCustomization
 {
-    public static int ColorIndex { get; private set; }
+    public static int TextureIndex { get; private set; }
+    public static PlayerData PlayerData { get; private set; }
 
-    public static void SetColorIndex(int colorIndex)
+    public static void SetTextureIndex(int textureIndex)
     {
-        ColorIndex = colorIndex;
+        TextureIndex = textureIndex;
+    }
+
+    public static void SetPlayerData(PlayerData playerData)
+    {
+        PlayerData = playerData;
     }
 }

@@ -1,4 +1,8 @@
+using TMPro;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
@@ -46,5 +50,23 @@ public class MenuManager : MonoBehaviour
     public void CloseMenu(Menu menu)
     {
         menu.Close();
+    }
+
+    public void CreateLobby(TMP_InputField inputField)
+    {
+        LobbyManager.Instance.CreateLobby(inputField);
+    }
+
+    public void SinglePlayer()
+    {
+        // NetworkManager.Singleton.GetComponent<UnityTransport>().Set
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(new());
+        NetworkManager.Singleton.StartHost();
+        NetworkManager.Singleton.SceneManager.LoadScene("Game Setup", LoadSceneMode.Single);
+    }
+
+    public void Quit()
+    {
+        Application.Quit();
     }
 }

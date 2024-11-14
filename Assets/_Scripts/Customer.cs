@@ -1,7 +1,8 @@
-using TMPro;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Customer : NetworkBehaviour
 {
@@ -12,12 +13,14 @@ public class Customer : NetworkBehaviour
     [SerializeField] private RecipeListSO _recipeListSO;
 
     [SerializeField] private GameObject _recipeImage;
-    [SerializeField] private TMP_Text _recipeText;
+    [SerializeField] private Image _foodImage;
 
     private NavMeshAgent _navMeshAgent;
 
-    [SerializeField] private float _leaveTime = 60;
+    [SerializeField] private float _leaveTime = 30;
     private float _leaveTimer;
+
+    public static List<Customer> _customers { get; private set; } = new();
 
     public override void OnNetworkSpawn()
     {
@@ -30,16 +33,24 @@ public class Customer : NetworkBehaviour
         _leaveTimer = _leaveTime;
 
         _navMeshAgent.Warp(transform.position);
+
+        _customers.Add(this);
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        _customers.Remove(this);
     }
 
     private void Update()
     {
         if (_leaveTimer <= 0 && _navMeshAgent.remainingDistance < 0.5)
         {
-            DespawnCustomerServerRpc(NetworkObject);
+            DespawnCustomerServerRpc();
         }
 
-        if (_leaveTimer <= 0)
+        if (_leaveTimer <= 0 || _currentTable == null)
         {
             _recipeImage.SetActive(false);
         }
@@ -52,7 +63,7 @@ public class Customer : NetworkBehaviour
         if (_navMeshAgent.remainingDistance < 0.5)
         {
             _recipeImage.SetActive(true);
-            _recipeText.text = _recipeSO.Name;
+            _foodImage.sprite = _recipeSO.RecipeImage;
         }
         else
         {
@@ -62,7 +73,8 @@ public class Customer : NetworkBehaviour
         _leaveTimer -= Time.deltaTime;
         if (_leaveTimer <= 0)
         {
-            LeaveRestaurant();
+            ScoreManager.Instance.AddPoints(_recipeSO.CheckRecipe(null));
+            LeaveRestaurantServerRpc();
         }
     }
 
@@ -70,7 +82,7 @@ public class Customer : NetworkBehaviour
     {
         float score = CheckPlate(plate);
         _currentTable.LeaveTable();
-        DespawnCustomerServerRpc(NetworkObject);
+        LeaveRestaurantServerRpc();
         ScoreManager.Instance.AddPoints(score);
     }
 
@@ -82,14 +94,14 @@ public class Customer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void SetRecipeServerRpc()
     {
-        int rand = _recipeListSO.GetRandomRecipeIndex();
+        int rand = FoodSelectionManager.Instance.GetRandomRecipeIndex();
         SetRecipeClientRpc(rand);
     }
 
     [ClientRpc]
     private void SetRecipeClientRpc(int randomRecipeIndex)
     {
-        _recipeSO = _recipeListSO.RecipeList[randomRecipeIndex];
+        _recipeSO = FoodSelectionManager.Instance.RecipieList.RecipeList[randomRecipeIndex];
     }
 
     public void SetDiningTable(DiningTable diningTable)
@@ -131,32 +143,36 @@ public class Customer : NetworkBehaviour
         _navMeshAgent.SetDestination(waitPos);
     }
 
-    private void LeaveRestaurant()
-    {
-        // _navMeshAgent.SetDestination(new Vector3(-18, 1, -13));
-        ScoreManager.Instance.AddPoints(-3);
-        SetLeavePosServerRpc();
-        _currentTable.LeaveTable();
-        _currentTable = null;
-
-        // Maybe change.
-        if (IsServer)
-        {
-            ScoreManager.Instance.AddPoints(-3);
-        }
-    }
-
     [ServerRpc(RequireOwnership = false)]
-    private void SetLeavePosServerRpc()
+    private void LeaveRestaurantServerRpc()
     {
         Vector3 leavePos = RestaurantManager.Instance.GetCustomerSpawnPos();
+        LeaveClientRpc(leavePos);
+    }
+
+    [ClientRpc]
+    private void LeaveClientRpc(Vector3 leavePos)
+    {
         _navMeshAgent.SetDestination(leavePos);
+        _currentTable?.LeaveTable();
+        _currentTable = null;
+        _customers.Remove(this);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void DespawnCustomerServerRpc(NetworkObjectReference reference)
+    private void DespawnCustomerServerRpc()
     {
-        reference.TryGet(out NetworkObject networkObject);
-        networkObject.Despawn();
+        NetworkObject.Despawn();
+    }
+
+    public static void MakeAllCustomersLeave()
+    {
+        RestaurantManager.Instance.ClearCustomersLine();
+
+        for (int i = _customers.Count - 1; i >= 0; i--)
+        {
+            Customer customer = _customers[i];
+            customer.LeaveRestaurantServerRpc();
+        }
     }
 }

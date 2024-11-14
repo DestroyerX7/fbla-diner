@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7f31719296c3a645bdc64b9fe8ec4de, type: 3}
   m_Name: Main Recipe List
   m_EditorClassIdentifier: 
-  <RecipeList>k__BackingField:
+  RecipeList:
   - {fileID: 11400000, guid: 4b258b2013194b543810e9c7fa8c6af0, type: 2}
+  - {fileID: 11400000, guid: 03abf4440b848564bab621c204b087e8, type: 2}
+  - {fileID: 11400000, guid: 118d69cd77597d4409436aba31ff310c, type: 2}

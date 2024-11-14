@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Netcode;
-using UnityEngine.SceneManagement;
-using System;
 
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(Rigidbody))]
@@ -15,6 +13,8 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float _moveSpeed = 5;
     [SerializeField] private float _rotateSpeed = 1000;
 
+    [SerializeField] private MeshRenderer _meshRenderer;
+
     public override void OnNetworkSpawn()
     {
         if (!IsOwner)
@@ -23,8 +23,6 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        base.OnNetworkSpawn();
-
         _playerControls = GetComponent<PlayerInput>();
         _moveAction = _playerControls.actions["Move"];
 
@@ -32,8 +30,7 @@ public class PlayerController : NetworkBehaviour
 
         transform.position = Vector3.up;
 
-        UpdateColorServerRpc(PlayerCustomizationManager.Instance.GetColorByIndex(PlayerCustomization.ColorIndex));
-        // GetComponent<MeshRenderer>().materials[0].color = PlayerCustomizationManager.Instance.GetColorByIndex(PlayerCustomization.ColorIndex);
+        UpdateTextureServerRpc(PlayerCustomization.PlayerData.SpriteIndex);
     }
 
     private void Update()
@@ -56,14 +53,14 @@ public class PlayerController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void UpdateColorServerRpc(Color32 color)
+    private void UpdateTextureServerRpc(int textureIndex)
     {
-        UpdateColorClientRpc(color);
+        UpdateTextureClientRpc(textureIndex);
     }
 
     [ClientRpc]
-    private void UpdateColorClientRpc(Color32 color)
+    private void UpdateTextureClientRpc(int textureIndex)
     {
-        GetComponent<MeshRenderer>().materials[0].color = color;
+        _meshRenderer.materials[0].mainTexture = PlayerCustomizationManager.Instance.GetTextureByIndex(textureIndex);
     }
 }

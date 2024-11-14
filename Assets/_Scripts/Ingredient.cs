@@ -6,7 +6,7 @@ public class Ingredient : KitchenObject, IPlaceable<Ingredient>
 {
     [SerializeField] private IngredientSO _ingredientSO;
 
-    public bool Place(Ingredient ingredient)
+    public virtual bool Place(Ingredient ingredient)
     {
         PlaceServerRpc(ingredient.GetNetworkObject());
         return true;

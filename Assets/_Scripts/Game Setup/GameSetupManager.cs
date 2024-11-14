@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameSetupManager : NetworkBehaviour
 {
+    public static GameSetupManager Instance { get; private set; }
+
     [SerializeField] private PlayerVisual[] _playerVisuals;
     private NetworkList<PlayerData> _playerDataList;
 
@@ -11,14 +13,51 @@ public class GameSetupManager : NetworkBehaviour
     private bool _isPlayerReady;
 
     [SerializeField] private GameObject _startButton;
+    [SerializeField] private GameObject _foodSelection;
 
     public PlayerVisual PlayerVisual { get; private set; }
 
     [SerializeField] private PlayerController _player;
 
-    public void Leave()
+    public bool SelectedFood = false;
+
+    private void Awake()
     {
-        LobbyManager.Instance.LeaveLobby();
+        _playerDataList = new();
+        Instance = this;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            ServerInit();
+        }
+
+        _playerDataList.OnListChanged += UpdatePlayerVisuals;
+
+        if (IsServer)
+        {
+            PlayerVisual = _playerVisuals[_playerDataList.Count - 1];
+        }
+        else
+        {
+            PlayerVisual = _playerVisuals[_playerDataList.Count];
+        }
+
+        PlayerCustomization.SetTextureIndex(_playerDataList.Count);
+        UpdateLocalPlayerVisual();
+    }
+
+    private void ServerInit()
+    {
+        _startButton.SetActive(true);
+        _foodSelection.SetActive(true);
+
+        NetworkManager.Singleton.OnClientConnectedCallback += UpdatePlayerData;
+        NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayerData;
+        NetworkManager.Singleton.OnClientStopped += OnShutdown;
+        UpdatePlayerData(NetworkManager.Singleton.LocalClientId);
     }
 
     public void StartGame()
@@ -33,6 +72,11 @@ public class GameSetupManager : NetworkBehaviour
             return;
         }
 
+        if (!SelectedFood)
+        {
+            return;
+        }
+
         foreach (PlayerData playerData in _playerDataList)
         {
             PlayerController player = Instantiate(_player);
@@ -40,6 +84,11 @@ public class GameSetupManager : NetworkBehaviour
         }
 
         LobbyManager.Instance.StartGame();
+    }
+
+    public void Leave()
+    {
+        NetworkManager.Singleton.Shutdown();
     }
 
     public void Ready(Image readyButtonImage)
@@ -58,42 +107,17 @@ public class GameSetupManager : NetworkBehaviour
         }
     }
 
-    private void Awake()
-    {
-        _playerDataList = new();
-        Instance = this;
-
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        if (IsHost)
-        {
-            _startButton.SetActive(true);
-        }
-
-        _playerDataList.OnListChanged += UpdatePlayerVisuals;
-
-        PlayerVisual = _playerVisuals[_playerDataList.Count];
-
-        if (!IsServer)
-        {
-            return;
-        }
-
-        NetworkManager.Singleton.OnClientConnectedCallback += UpdatePlayerData;
-        NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayerData;
-        UpdatePlayerData(NetworkManager.Singleton.ConnectedClientsIds[0]);
-    }
-
     private void UpdatePlayerData(ulong clientId)
     {
         PlayerData playerData = new()
         {
             ClientId = clientId,
+            // PlayerId = LobbyManager.Instance.
+            SpriteIndex = _playerDataList.Count + 1
         };
 
         _playerDataList.Add(playerData);
+        _playerVisuals[_playerDataList.Count - 1].SetPlayerData(playerData);
     }
 
     private void RemovePlayerData(ulong clientId)
@@ -136,15 +160,23 @@ public class GameSetupManager : NetworkBehaviour
         }
     }
 
-    public void TempMethod()
+    public void UpdateLocalPlayerVisual()
     {
-        // foreach (PlayerVisual playerisual in _playerVisuals)
-        // {
-        //     playerisual.GetComponent<MeshRenderer>().materials[0].color = PlayerCustomizationManager.Instance.GetColorByIndex(PlayerCustomization.ColorIndex);
-        // }
-        // print(PlayerVisual);
-        PlayerVisual.SetColor(PlayerCustomizationManager.Instance.GetColorByIndex(PlayerCustomization.ColorIndex));
+        PlayerData playerData = new()
+        {
+            ClientId = NetworkManager.Singleton.LocalClientId,
+            SpriteIndex = PlayerCustomization.TextureIndex
+        };
+
+        PlayerVisual.SetPlayerData(PlayerCustomization.PlayerData);
     }
 
-    public static GameSetupManager Instance { get; private set; }
+    private void OnShutdown(bool isCurrentClient)
+    {
+        if (isCurrentClient)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= UpdatePlayerData;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= RemovePlayerData;
+        }
+    }
 }

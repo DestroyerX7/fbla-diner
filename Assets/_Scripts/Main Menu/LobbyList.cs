@@ -32,6 +32,11 @@ public class LobbyList : MonoBehaviour
                 QueryResponse response = await Lobbies.Instance.QueryLobbiesAsync();
                 List<Lobby> lobbies = response.Results;
 
+                if (this == null)
+                {
+                    return;
+                }
+
                 foreach (Transform oldLobby in transform)
                 {
                     Destroy(oldLobby.gameObject);

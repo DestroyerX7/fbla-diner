@@ -71,6 +71,11 @@ public class Stove : NetworkBehaviour, IPickupable<KitchenObject>, IPlaceable<Ki
 
     public void Pickup(NetworkObject returnTo)
     {
+        if (_currentObject == null)
+        {
+            return;
+        }
+
         PickupServerRpc(returnTo);
     }
 

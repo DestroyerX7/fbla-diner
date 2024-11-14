@@ -28,8 +28,6 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private float _lobbyHeartbeatTime = 10;
     private float _lobbyHeartbeatTimer;
 
-
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -46,6 +44,7 @@ public class LobbyManager : MonoBehaviour
     private void Start()
     {
         _lobbyHeartbeatTimer = _lobbyHeartbeatTime;
+        NetworkManager.Singleton.OnClientStopped += LeaveLobby;
     }
 
     private void Update()
@@ -55,14 +54,21 @@ public class LobbyManager : MonoBehaviour
 
     private async void InitAndSignIn()
     {
-        await UnityServices.InitializeAsync();
-
-        AuthenticationService.Instance.SignedIn += () =>
+        try
         {
-            _playerId = AuthenticationService.Instance.PlayerId;
-        };
+            await UnityServices.InitializeAsync();
 
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            AuthenticationService.Instance.SignedIn += () =>
+            {
+                _playerId = AuthenticationService.Instance.PlayerId;
+            };
+
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+        catch (System.Exception)
+        {
+
+        }
     }
 
     public async void CreateLobby(TMP_InputField inputField)
@@ -93,6 +99,15 @@ public class LobbyManager : MonoBehaviour
             RelayServerData relayServerData = new(allocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartHost();
+
+            PlayerData playerData = new()
+            {
+                ClientId = NetworkManager.Singleton.LocalClientId,
+                PlayerId = _playerId,
+                SpriteIndex = NetworkManager.Singleton.ConnectedClients.Count,
+            };
+            PlayerCustomization.SetPlayerData(playerData);
+
             NetworkManager.Singleton.SceneManager.LoadScene("Game Setup", LoadSceneMode.Single);
         }
         catch (LobbyServiceException e)
@@ -113,6 +128,14 @@ public class LobbyManager : MonoBehaviour
             RelayServerData relayServerData = new(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartClient();
+
+            PlayerData playerData = new()
+            {
+                ClientId = NetworkManager.Singleton.LocalClientId,
+                PlayerId = _playerId,
+                SpriteIndex = _joinedLobby.Players.Count,
+            };
+            PlayerCustomization.SetPlayerData(playerData);
         }
         catch (LobbyServiceException e)
         {
@@ -125,37 +148,22 @@ public class LobbyManager : MonoBehaviour
         NetworkManager.Singleton.SceneManager.LoadScene("Game", LoadSceneMode.Single);
     }
 
-    public async void LeaveLobby()
+    public async void LeaveLobby(bool isServer)
     {
-        if (_joinedLobby == null)
-        {
-            return;
-        }
-
         try
         {
-            await Lobbies.Instance.RemovePlayerAsync(_joinedLobby.Id, _playerId);
-            _joinedLobby = null;
-            NetworkManager.Singleton.Shutdown();
+            if (_joinedLobby != null)
+            {
+                await Lobbies.Instance.RemovePlayerAsync(_joinedLobby.Id, _playerId);
+                _joinedLobby = null;
+            }
+
             SceneManager.LoadScene(0);
         }
         catch (LobbyServiceException e)
         {
             Debug.LogWarning(e);
         }
-    }
-
-    // Not ready yet, other players will not recieve that they have been kicked
-    public /*async*/ void KickPlayer(Player player)
-    {
-        throw new System.NotImplementedException();
-
-        // if (_joinedLobby == null || _playerId != _joinedLobby.Id)
-        // {
-        //     return;
-        // }
-
-        // await Lobbies.Instance.RemovePlayerAsync(_joinedLobby.Id, player.Id);
     }
 
     private async void HandleLobbyHeartbeat()
@@ -193,6 +201,21 @@ public class LobbyManager : MonoBehaviour
             Debug.LogWarning(e);
             return default;
         }
+    }
+
+    public void SinglePlayer()
+    {
+        NetworkManager.Singleton.StartHost();
+
+        PlayerData playerData = new()
+        {
+            ClientId = NetworkManager.Singleton.LocalClientId,
+            PlayerId = _playerId,
+            SpriteIndex = 1,
+        };
+        PlayerCustomization.SetPlayerData(playerData);
+
+        NetworkManager.Singleton.SceneManager.LoadScene("Game Setup", LoadSceneMode.Single);
     }
 
     public void Quit()

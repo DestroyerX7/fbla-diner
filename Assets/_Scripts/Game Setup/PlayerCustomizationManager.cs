@@ -1,12 +1,11 @@
-using System.Collections.Generic;
 using UnityEngine;
-using Unity.Netcode;
 
 public class PlayerCustomizationManager : MonoBehaviour
 {
     public static PlayerCustomizationManager Instance { get; private set; }
 
-    [SerializeField] private Color32[] _colors;
+    [SerializeField] private Texture2D[] _playerTextures;
+    [SerializeField] private Sprite[] _playerSprites;
 
     private void Awake()
     {
@@ -20,8 +19,13 @@ public class PlayerCustomizationManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public Color32 GetColorByIndex(int index)
+    public Texture2D GetTextureByIndex(int index)
     {
-        return _colors[index];
+        return _playerTextures[index];
+    }
+
+    public Sprite GetSpriteByIndex(int index)
+    {
+        return _playerSprites[index];
     }
 }

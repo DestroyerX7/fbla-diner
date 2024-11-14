@@ -30,8 +30,18 @@ public class Plate : KitchenObject, IPlaceable<KitchenObject>, ITrashable
     {
         reference.TryGet(out NetworkObject networkObject);
         Ingredient ingredient = networkObject.GetComponent<Ingredient>();
-        NetworkObject followObject = _ingredients.Count > 0 ? _ingredients.Peek().GetNetworkObject() : NetworkObject;
-        ingredient.SetFollowTransform(followObject);
+        // NetworkObject followObject = _ingredients.Count > 0 ? _ingredients.Peek().GetNetworkObject() : NetworkObject;
+
+        if (_ingredients.Count > 0)
+        {
+            _ingredients.Peek().Place(ingredient);
+        }
+        else
+        {
+            ingredient.SetFollowTransform(NetworkObject);
+        }
+
+        // ingredient.SetFollowTransform(followObject);
         _ingredients.Push(ingredient);
     }
 

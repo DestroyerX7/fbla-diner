@@ -9,9 +9,10 @@ public class IngredientSO : ScriptableObject
 public enum IngredientType
 {
     Bread,
-    BurgerPaddy,
+    BurgerPatty,
     Lettuce,
     Bacon,
     Cheese,
-    Tomatoes
+    Tomatoes,
+    Steak,
 }

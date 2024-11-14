@@ -3,15 +3,17 @@ using UnityEngine.UI;
 
 public class ColorCustomizationButton : MonoBehaviour
 {
-    [SerializeField] private int _colorIndex;
+    [SerializeField] private int _index;
 
     private void Start()
     {
         GetComponent<Button>().onClick.AddListener(() =>
         {
-            PlayerCustomization.SetColorIndex(_colorIndex);
-            GameSetupManager.Instance.TempMethod();
-            print(PlayerCustomization.ColorIndex);
+            PlayerCustomization.SetTextureIndex(_index);
+            PlayerData copied = PlayerCustomization.PlayerData;
+            copied.SpriteIndex = _index;
+            PlayerCustomization.SetPlayerData(copied);
+            GameSetupManager.Instance.UpdateLocalPlayerVisual();
         });
     }
 }
